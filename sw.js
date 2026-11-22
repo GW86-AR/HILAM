@@ -1,5 +1,5 @@
 // Service worker de la app Visor HILAM: funciona sin conexión (guarda la app) y recibe los visores compartidos.
-const CACHE = "hilam-v1.0.0";
+const CACHE = "hilam-v1.0.1";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "privacidad.html", "icons/icon-192.png", "icons/icon-512.png", "icons/maskable-512.png"];
 
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting())); });

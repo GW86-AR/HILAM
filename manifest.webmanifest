@@ -1,7 +1,7 @@
 {
   "id": "./",
   "name": "Visor HILAM",
-  "short_name": "HILAM",
+  "short_name": "Visor HILAM",
   "description": "Abre los visores HILAM (láminas de fabricación y otros de la suite): planos, 3D, anotaciones y cámara.",
   "lang": "es",
   "start_url": "./",

@@ -1,5 +1,5 @@
 // Service worker de la app Visor HILAM: funciona sin conexión (guarda la app) y recibe los visores compartidos.
-const CACHE = "hilam-v1.1.1";
+const CACHE = "hilam-v1.2.1";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "privacidad.html", "marcador.html", "icons/icon-192.png", "icons/icon-512.png", "icons/maskable-512.png"];
 
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting())); });
@@ -35,7 +35,8 @@ async function receiveShare(request) {
 self.addEventListener("fetch", (e) => {
   const url = new URL(e.request.url);
   if (e.request.method === "POST" && url.pathname.endsWith("/share-target")) { e.respondWith(receiveShare(e.request)); return; }
-  if (e.request.method !== "GET" || url.origin !== location.origin) return;
+  // solo la app (dentro de su alcance): cualquier otra cosa del mismo servidor va directo a la red
+  if (e.request.method !== "GET" || !url.href.startsWith(self.registration.scope)) return;
   // la app: primero lo guardado (abre sin conexión) y se actualiza por detrás
   e.respondWith(caches.open(CACHE).then(async (c) => {
     const hit = await c.match(e.request, { ignoreSearch: true });

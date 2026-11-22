@@ -15,7 +15,7 @@
   html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font: 14px/1.45 var(--sans); }
   body { -webkit-tap-highlight-color: transparent; }
   button { font: inherit; color: inherit; cursor: pointer; }
-  .top { height: 56px; display: flex; align-items: center; gap: 12px; padding: 0 16px; padding-top: env(safe-area-inset-top);
+  .top { min-height: 56px; display: flex; align-items: center; gap: 12px; padding: 0 16px; padding-top: env(safe-area-inset-top);
     background: var(--panel); border-bottom: 1px solid var(--line); }
   .mark { width: 28px; height: 28px; background: var(--accent); flex: none; position: relative; }
   .mark::after { content: ""; position: absolute; left: 8px; top: 4px; width: 12px; height: 20px; background: #fff;
@@ -24,56 +24,71 @@
   .top small { display: block; color: var(--muted); font-size: 12px; }
   .btn { border: 1px solid var(--line2); background: var(--panel); padding: 9px 14px; border-radius: 8px; }
   .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
-  #home { max-width: 640px; margin: 0 auto; padding: 18px 16px 40px; }
-  .open { display: flex; width: 100%; justify-content: center; gap: 8px; padding: 16px; font-size: 16px; margin: 4px 0 18px; }
-  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 22px 0 8px; }
-  .rec { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: center; background: var(--panel); border: 1px solid var(--line);
+  .btn.danger { color: #b42318; border-color: rgba(180,35,24,.35); }
+  main { max-width: 640px; margin: 0 auto; padding: 16px 16px 40px; }
+  main[hidden] { display: none; }
+  .open { display: flex; width: 100%; justify-content: center; gap: 8px; padding: 15px; font-size: 16px; margin: 2px 0 10px; }
+  .store { font-size: 12px; color: var(--muted); display: flex; gap: 6px; align-items: center; margin: 0 2px 6px; }
+  .store i { width: 8px; height: 8px; border-radius: 50%; background: #2f9e44; flex: none; }
+  .store.warn i { background: #f59f00; }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 22px 0 8px; display: flex; justify-content: space-between; }
+  .card { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: center; background: var(--panel); border: 1px solid var(--line);
     border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; cursor: pointer; }
-  .rec b { font: 600 14px var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .rec small { color: var(--muted); grid-column: 1; }
-  .rec .del { grid-row: 1 / 3; grid-column: 2; border: 0; background: none; color: var(--muted); font-size: 18px; padding: 6px 8px; }
+  .card b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .card .mono { font-family: var(--mono); }
+  .card small { color: var(--muted); grid-column: 1; overflow: hidden; text-overflow: ellipsis; }
+  .card .side { grid-row: 1 / 3; grid-column: 2; display: flex; align-items: center; gap: 4px; color: var(--muted); }
+  .card .del { border: 0; background: none; color: var(--muted); font-size: 18px; padding: 6px 8px; }
+  .tag { display: inline-block; font: 600 11px var(--sans); padding: 1px 7px; border-radius: 999px; margin-right: 6px; vertical-align: 1px; color: #fff; background: #6b7682; }
+  .tag.laminas { background: #f26a1b; } .tag.control { background: #1971c2; } .tag.comentarios { background: #7048e8; }
+  .tag.montaje { background: #2f9e44; } .tag.carga { background: #0c8599; } .tag.otro { background: #868e96; }
+  .ok { color: #2b8a3e; font-weight: 600; } .no { color: #c92a2a; font-weight: 600; }
+  .phead { display: flex; align-items: center; gap: 8px; margin: 2px 0 4px; }
+  .phead .link { border: 0; background: none; color: var(--accent); font-weight: 600; padding: 4px 0; }
+  .ptitle { font-size: 19px; margin: 6px 0 2px; }
+  .psub { color: var(--muted); margin: 0 0 6px; }
   .empty { color: var(--muted); font-style: italic; }
-  .help { color: var(--muted); font-size: 13px; }
+  .help { color: var(--muted); font-size: 13px; padding-left: 18px; }
   .help li { margin: 4px 0; }
   .err { background: #ffe8e8; color: #9b1c1c; border-radius: 8px; padding: 10px 12px; margin: 8px 0; }
   .err[hidden] { display: none; }
   #viewer { position: fixed; inset: 0; background: #fff; z-index: 5; }
   #viewer[hidden] { display: none; }
   #frame { border: 0; width: 100%; height: 100%; display: block; }
-  #back { position: fixed; left: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 6; width: 40px; height: 40px; border-radius: 50%;
-    border: 1px solid var(--line2); background: rgba(255,255,255,.88); box-shadow: 0 2px 8px rgba(0,0,0,.18); font-size: 18px; line-height: 1; }
-  #back[hidden] { display: none; }
   .ver { color: var(--muted); font-size: 11px; text-align: center; margin-top: 30px; }
 </style>
 </head>
 <body>
 <header class="top"><div class="mark" aria-hidden="true"></div><div><b>Visor HILAM</b><small>Visores de la suite HILAM</small></div></header>
+<input id="pick" type="file" accept=".html,.htm,text/html" hidden>
 <main id="home">
-  <input id="pick" type="file" accept=".html,.htm,text/html" hidden>
   <button class="btn primary open" id="openBtn">Abrir visor (.html)</button>
+  <div class="store" id="store"></div>
   <div class="err" id="err" hidden></div>
-  <h2>Recientes</h2>
-  <div id="recent"></div>
+  <h2>Proyectos</h2>
+  <div id="projects"></div>
   <h2>Cómo abrir un visor</h2>
   <ul class="help">
-    <li><b>Compartir:</b> desde WhatsApp, Teams, correo o Archivos, toca el archivo del visor (<code>.html</code>, p. ej. <code>…_LF_NN.html</code> de Láminas) → Compartir → <b>Visor HILAM</b>.</li>
+    <li><b>Compartir:</b> desde WhatsApp, Teams, correo o Archivos, toca el archivo del visor (<code>.html</code>) → Compartir → <b>Visor HILAM</b>.</li>
     <li><b>Abrir visor:</b> el botón de arriba busca el archivo en el teléfono.</li>
-    <li>El archivo queda en este teléfono (Recientes). No se sube a ningún servidor.</li>
-    <li><b>Calzar con QR:</b> imprime el <a href="marcador.html" target="_blank">marcador QR</a> (desde el PC, al 100 %) y pégalo en una esquina de la pieza.</li>
-    <li>Abre cualquier visor HILAM. Los que usan la cámara (p. ej. Láminas: <b>◉ Cámara</b>) la tienen activa dentro de esta app.</li>
+    <li>Abre los visores de la suite: Láminas, Reporte de Control, Control de comentarios, Estudio de montaje y Truck Optimizer. Cada uno queda en su proyecto, con las revisiones hechas en terreno.</li>
+    <li>Todo queda en este teléfono. No se sube a ningún servidor.</li>
+    <li><b>Calzar la cámara con QR</b> (Láminas): imprime el <a href="marcador.html" target="_blank">marcador QR</a> desde el PC, al 100 %, y pégalo en una esquina de la pieza.</li>
   </ul>
   <p class="ver" id="ver"></p>
 </main>
-<div id="viewer" hidden><iframe id="frame" title="Visor HILAM" allow="camera; fullscreen; web-share; clipboard-write" allowfullscreen></iframe></div>
-<button id="back" hidden aria-label="Volver a la lista">←</button>
+<main id="project" hidden></main>
+<div id="viewer" hidden></div>
 <script>
 "use strict";
-const APP_VERSION = "1.1.1";
+const APP_VERSION = "1.2.1";
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fmtDate = (t) => t ? new Date(t).toLocaleDateString("es-CL") : "";
+const kb = (n) => n >= 1024 * 1024 ? (n / 1048576).toFixed(1).replace(".", ",") + " MB" : Math.max(1, Math.round(n / 1024)) + " KB";
 $("#ver").textContent = "Versión " + APP_VERSION + " · Desarrollado por Gerth Wandersleben";
 
-// ---- almacenamiento local (IndexedDB): visores recientes y el archivo recibido por «Compartir»
+// ---- almacenamiento (IndexedDB): visores guardados y el archivo recibido por «Compartir»
 function db() {
   return new Promise((ok, ko) => {
     const r = indexedDB.open("hilam", 1);
@@ -85,83 +100,232 @@ async function tx(store, mode, fn) {
   const d = await db();
   return new Promise((ok, ko) => { const t = d.transaction(store, mode), s = t.objectStore(store), res = fn(s); t.oncomplete = () => ok(res && res.result); t.onerror = () => ko(t.error); });
 }
-const MAX_RECENT = 8;
-async function listRecent() { const all = (await tx("files", "readonly", (s) => s.getAll())) || []; return all.sort((a, b) => b.opened - a.opened); }
-async function saveRecent(rec) {
-  await tx("files", "readwrite", (s) => s.put(rec));
-  const all = await listRecent();
-  for (const old of all.slice(MAX_RECENT)) await tx("files", "readwrite", (s) => s.delete(old.id));
+const allFiles = async () => (await tx("files", "readonly", (s) => s.getAll()).catch(() => [])) || [];
+const getFile = (id) => tx("files", "readonly", (s) => s.get(id));
+const putFile = (rec) => tx("files", "readwrite", (s) => s.put(rec));
+const delFile = (id) => tx("files", "readwrite", (s) => s.delete(id));
+
+// almacenamiento persistente: sin él, Android puede borrar los datos de la app si el teléfono se queda sin espacio
+async function persist() {
+  const el = $("#store");
+  if (!navigator.storage || !navigator.storage.persist) { el.textContent = ""; return; }
+  let ok = await navigator.storage.persisted().catch(() => false);
+  if (!ok) ok = await navigator.storage.persist().catch(() => false);
+  const est = navigator.storage.estimate ? await navigator.storage.estimate().catch(() => null) : null;
+  const used = est && est.usage ? " · " + kb(est.usage) + " usados" : "";
+  el.className = "store" + (ok ? "" : " warn");
+  el.innerHTML = ok ? `<i></i>Archivos protegidos en este teléfono${used}`
+    : `<i></i>Android podría borrar los archivos si falta espacio (instala la app desde Chrome para protegerlos)${used}`;
 }
 
-// ---- abrir un visor
-// un visor HILAM se reconoce por <meta name="hilam-visor" content="nombre">; los visores de Láminas anteriores a esa marca
-// se reconocen por su texto. Cualquier otro .html se rechaza: la app le daría acceso a sus archivos guardados.
-function isViewer(html) { return /<meta[^>]+name=["']hilam-visor["']/i.test(html) || (/Láminas de fabricación/.test(html) && /const DATA = /.test(html)); }
-function viewerName(html) { const m = html.match(/<meta[^>]+name=["']hilam-visor["'][^>]*content=["']([^"']*)["']/i); return m ? m[1] : "laminas"; }
-function describe(html) {                                  // código, modelo y fecha del visor, para la lista
-  const m = html.match(/"project"\s*:\s*\{[^}]*\}/);
-  try { const p = JSON.parse("{" + m[0] + "}").project; return [p.code, p.model, (p.created || "").slice(0, 10)].filter(Boolean).join(" · "); } catch (e) { return ""; }
+// ---- qué visor es y de qué proyecto
+const VIEWERS = { laminas: "Láminas", control: "Reporte de Control", comentarios: "Control de comentarios", montaje: "Estudio de montaje", carga: "Truck Optimizer", otro: "Visor HILAM" };
+const CODES = { LF: "laminas", RC: "control", CC: "comentarios", OF: "control", EM: "montaje", TO: "carga" };
+function meta(html, name) {
+  const m = html.match(new RegExp(`<meta[^>]+name=["']${name}["'][^>]*>`, "i"));
+  const c = m && m[0].match(/content=["']([^"']*)["']/i);
+  return c ? c[1].replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").trim() : null;
 }
-let blobUrl = null;
-function showError(t) { const e = $("#err"); e.textContent = t; e.hidden = !t; }
-async function openText(name, html, keep) {
-  if (!isViewer(html)) { showError(`«${name}» no es un visor de la suite HILAM (los visores exportados llevan la marca hilam-visor).`); return; }
-  showError("");
-  // misma página que en el PC y en Chrome: la app solo agrega window.HILAM_APP (y LF_APP para Láminas), que habilitan la cámara
-  const app = `{version:${JSON.stringify(APP_VERSION)},platform:"pwa"}`, flag = `<script>window.HILAM_APP=${app};window.LF_APP=window.HILAM_APP;<\/script>`;
-  const page = /<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, (h) => h + flag) : flag + html;
-  if (blobUrl) URL.revokeObjectURL(blobUrl);
-  blobUrl = URL.createObjectURL(new Blob([page], { type: "text/html" }));
-  $("#frame").src = blobUrl;
-  $("#viewer").hidden = false; $("#back").hidden = false;
-  document.title = name;
-  if (!history.state || !history.state.viewer) history.pushState({ viewer: true }, "", location.pathname + "#visor");
-  if (keep !== false) {
-    const id = name + "|" + html.length;
-    await saveRecent({ id, name, info: describe(html), size: html.length, opened: Date.now(), html }).catch(() => {});
+function recognize(name, html) {
+  const head = html.slice(0, 200000), title = ((head.match(/<title>([\s\S]*?)<\/title>/i) || [])[1] || "").trim();
+  let viewer = meta(head, "hilam-visor");
+  const fileCode = (name.match(/_([A-Z]{2})_\d+\.html?$/i) || [])[1];
+  if (!viewer && fileCode && CODES[fileCode.toUpperCase()]) viewer = CODES[fileCode.toUpperCase()];
+  if (!viewer) {
+    if (/Láminas de fabricación/.test(title) || (/Láminas de fabricación/.test(head) && /const DATA = /.test(html))) viewer = "laminas";
+    else if (/Reporte de Control/i.test(title)) viewer = "control";
+    else if (/comentarios/i.test(title)) viewer = "comentarios";
+    else if (/montaje|armado/i.test(title)) viewer = "montaje";
+    else if (/Truck Optimizer|Avance de obra|carga/i.test(title)) viewer = "carga";
+    else if (/HILAM/.test(html)) viewer = "otro";
   }
+  if (!viewer) return null;
+  if (!VIEWERS[viewer]) viewer = "otro";
+  // proyecto: la marca hilam-proyecto («2645 · nombre»); si no, los datos de Láminas, el código del nombre del archivo o el título
+  let code = "", pname = "";
+  const pm = meta(head, "hilam-proyecto");
+  if (pm) { const m = pm.match(/^(\d{3,5})\s*·\s*(.*)$/); if (m) { code = m[1]; pname = m[2]; } else pname = pm; }
+  if (!pm) {
+    const m = html.match(/"project"\s*:\s*\{[^}]*\}/);
+    if (m) { try { const p = JSON.parse("{" + m[0] + "}").project; code = String(p.code || ""); pname = p.model || ""; } catch (e) { /* sin datos */ } }
+  }
+  if (!code) code = (name.match(/^(\d{3,5})[_ -]/) || [])[1] || "";
+  if (!pname) { const t = title.split(/\s[·–—-]\s/); pname = t.length > 1 ? t.slice(1).join(" · ") : ""; }
+  const date = meta(head, "hilam-fecha") || ((html.match(/"created"\s*:\s*"([^"]{10})/) || [])[1]) || "";
+  return { viewer, code, pname, date, title, trusted: true };
 }
-async function openFile(file) { openText(file.name, await file.text()); }
+const projectKey = (r) => r.code || r.pname || "sin-proyecto";
+
+// ---- revisiones en terreno (las guardan los visores en el almacenamiento de la app: "lf_ar:<proyecto>:<pieza>")
+function allReviews() {
+  const out = [];
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (!/^lf_ar:/.test(k)) continue;
+      let r; try { r = JSON.parse(localStorage.getItem(k)); } catch (e) { continue; }
+      if (!r || typeof r !== "object") continue;
+      const [, proj, piece] = k.split(":");
+      const marks = Object.values(r.items || {});
+      out.push({ key: k, viewer: r.viewer || "laminas", project: r.project || proj || "", piece: r.piece || ((piece || "").match(/^n(\d+)_/) || [])[1] || piece,
+        name: r.name || "", when: r.when, ok: marks.filter((m) => m === "ok").length, no: marks.filter((m) => m === "no").length, note: r.note || "" });
+    }
+  } catch (e) { /* sin almacenamiento */ }
+  return out;
+}
+
+// ---- proyectos
+async function projects() {
+  const files = await allFiles(), revs = allReviews(), map = new Map();
+  const get = (key) => { if (!map.has(key)) map.set(key, { key, code: "", name: "", files: [], revs: [], last: 0 }); return map.get(key); };
+  for (const f of files) {
+    const p = get(f.pkey); p.files.push(f);
+    p.code = p.code || f.code; p.name = p.name || f.pname; p.last = Math.max(p.last, f.opened || f.added || 0);
+  }
+  for (const r of revs) {
+    const p = get(r.project || "sin-proyecto"); p.revs.push(r);
+    p.code = p.code || (/^\d+$/.test(r.project) ? r.project : ""); p.last = Math.max(p.last, Date.parse(r.when) || 0);
+  }
+  for (const p of map.values()) { p.files.sort((a, b) => (b.opened || 0) - (a.opened || 0)); p.revs.sort((a, b) => (Date.parse(b.when) || 0) - (Date.parse(a.when) || 0)); }
+  return [...map.values()].sort((a, b) => b.last - a.last);
+}
+const ptitle = (p) => p.code && p.name ? `${p.code} · ${p.name}` : p.code || p.name || "Sin proyecto";
+let renderSeq = 0;                                     // si dos dibujos se cruzan, manda el último
+async function renderHome() {
+  const my = ++renderSeq, ps = await projects();
+  if (my !== renderSeq) return;
+  $("#projects").innerHTML = ps.length ? ps.map((p) => {
+    const kinds = [...new Set(p.files.map((f) => f.viewer))].map((v) => `<span class="tag ${v}">${esc(VIEWERS[v])}</span>`).join("");
+    return `<div class="card" data-project="${esc(p.key)}"><b>${esc(ptitle(p))}</b>` +
+      `<small>${kinds}${p.files.length} ${p.files.length === 1 ? "visor" : "visores"} · ${p.revs.length} ${p.revs.length === 1 ? "revisión" : "revisiones"}${p.last ? " · " + fmtDate(p.last) : ""}</small>` +
+      `<span class="side">›</span></div>`;
+  }).join("") : `<p class="empty">Todavía no has abierto ningún visor.</p>`;
+}
+let curProject = null;
+async function renderProject(key) {
+  const my = ++renderSeq, p = (await projects()).find((x) => x.key === key);
+  if (my !== renderSeq) return;
+  if (!p) { if (history.state && history.state.project) history.back(); else showHome(); return; }   // el proyecto quedó vacío
+  curProject = key;
+  let h = `<div class="phead"><button class="link" data-act="home">‹ Proyectos</button></div>` +
+    `<div class="ptitle">${esc(ptitle(p))}</div><p class="psub">${p.files.length} ${p.files.length === 1 ? "visor" : "visores"} · ${p.revs.length} ${p.revs.length === 1 ? "revisión" : "revisiones"}</p>`;
+  h += `<h2>Visores</h2>` + (p.files.length ? p.files.map((f) =>
+    `<div class="card" data-file="${esc(f.id)}"><b class="mono">${esc(f.name)}</b>` +
+    `<small><span class="tag ${f.viewer}">${esc(VIEWERS[f.viewer])}</span>${f.date ? "exportado " + esc(f.date) + " · " : ""}abierto ${fmtDate(f.opened)} · ${kb(f.size)}</small>` +
+    `<span class="side"><button class="del" data-move="${esc(f.id)}" aria-label="Mover a otro proyecto" title="Mover a otro proyecto">⇄</button>` +
+    `<button class="del" data-delfile="${esc(f.id)}" aria-label="Eliminar">✕</button></span></div>`).join("")
+    : `<p class="empty">Sin visores guardados.</p>`);
+  h += `<h2>Revisiones en terreno</h2>` + (p.revs.length ? p.revs.map((r) =>
+    `<div class="card" data-rev="${esc(r.key)}"><b><span class="tag ${r.viewer}">${esc(VIEWERS[r.viewer] || "Visor")}</span>${esc(r.piece)} ${esc(r.name)}</b>` +
+    `<small><span class="ok">✓ ${r.ok}</span> · <span class="no">✗ ${r.no}</span>${r.when ? " · " + fmtDate(r.when) : ""}${r.note ? " · " + esc(r.note.slice(0, 60)) : ""}</small>` +
+    `<span class="side"><button class="del" data-delrev="${esc(r.key)}" aria-label="Eliminar">✕</button></span></div>`).join("")
+    : `<p class="empty">Sin revisiones. Se hacen en la ficha de cada pieza, dentro del visor.</p>`);
+  h += `<p style="margin-top:26px"><button class="btn danger" data-act="delproject">Eliminar proyecto</button></p>`;
+  $("#project").innerHTML = h;
+  $("#home").hidden = true; $("#project").hidden = false; window.scrollTo(0, 0);
+}
+function showHome() { curProject = null; $("#project").hidden = true; $("#home").hidden = false; renderHome(); persist(); }
+function goProject(key) { history.pushState({ project: key }, "", location.pathname + "#proyecto"); renderProject(key); }
+
+$("#projects").addEventListener("click", (e) => { const c = e.target.closest("[data-project]"); if (c) goProject(c.dataset.project); });
+$("#project").addEventListener("click", async (e) => {
+  const act = e.target.closest("[data-act]"), df = e.target.closest("[data-delfile]"), dr = e.target.closest("[data-delrev]");
+  if (act && act.dataset.act === "home") { history.back(); return; }
+  if (act && act.dataset.act === "delproject") {
+    const p = (await projects()).find((x) => x.key === curProject);
+    if (!p || !confirm(`¿Eliminar el proyecto «${ptitle(p)}» de este teléfono? Se borran sus ${p.files.length} visores y ${p.revs.length} revisiones.`)) return;
+    for (const f of p.files) await delFile(f.id);
+    for (const r of p.revs) try { localStorage.removeItem(r.key); } catch (er) { /* sin almacenamiento */ }
+    history.back(); return;
+  }
+  const mv = e.target.closest("[data-move]");
+  if (mv) {                                             // visores sin proyecto en el archivo (montaje, carga): se asignan a mano
+    e.stopPropagation();
+    const f = await getFile(mv.dataset.move), ps = (await projects()).filter((x) => x.key !== "sin-proyecto").map(ptitle);
+    const ans = f && prompt(`Mover «${f.name}» al proyecto (código y nombre, p. ej. «2645 · Edificio»):` + (ps.length ? `
+
+Proyectos: ${ps.join(" | ")}` : ""), f.code ? `${f.code} · ${f.pname}` : "");
+    if (!ans || !ans.trim()) return;
+    const m = ans.trim().match(/^(\d{3,5})\s*(?:·|-|\s)\s*(.*)$/), code = m ? m[1] : (/^\d{3,5}$/.test(ans.trim()) ? ans.trim() : ""), pname = m ? m[2] : (code ? "" : ans.trim());
+    const known = (await projects()).find((x) => x.code && x.code === code);
+    await delFile(f.id);
+    Object.assign(f, { code, pname: pname || (known ? known.name : ""), pkey: code || pname });
+    f.id = f.pkey + "|" + f.name; await putFile(f);
+    renderProject(curProject); return;
+  }
+  if (df) { e.stopPropagation(); const f = await getFile(df.dataset.delfile); if (f && confirm(`¿Eliminar «${f.name}» de este teléfono?`)) { await delFile(f.id); renderProject(curProject); } return; }
+  if (dr) { e.stopPropagation(); if (confirm("¿Eliminar esta revisión?")) { try { localStorage.removeItem(dr.dataset.delrev); } catch (er) { /* */ } renderProject(curProject); } return; }
+  const fc = e.target.closest("[data-file]");
+  if (fc) { const f = await getFile(fc.dataset.file); if (f) { f.opened = Date.now(); await putFile(f); show(f); } return; }
+  const rc = e.target.closest("[data-rev]");
+  if (rc) {                                             // abrir la revisión: el visor más reciente del proyecto, en esa pieza
+    const p = (await projects()).find((x) => x.key === curProject), r = p && p.revs.find((x) => x.key === rc.dataset.rev);
+    const f = p && p.files.find((x) => x.viewer === r.viewer);
+    if (!f) { showError("No hay un visor de este proyecto guardado para abrir la revisión."); return; }
+    show(f, r.piece);
+  }
+});
+
+// ---- abrir un visor
+let blobUrl = null;
+function showError(t) { const e = $("#err"); e.textContent = t; e.hidden = !t; if (t) { $("#project").hidden = true; $("#home").hidden = false; } }
+async function receive(name, html) {
+  let info = recognize(name, html);
+  if (!info) {
+    if (!confirm(`«${name}» no parece un visor HILAM. ¿Abrirlo igual? Se abrirá aislado: sin cámara ni acceso a los otros visores guardados.`)) return;
+    info = { viewer: "otro", code: "", pname: "", date: "", title: "", trusted: false };
+  }
+  showError("");
+  const pkey = projectKey(info), rec = { id: pkey + "|" + name, name, html, size: html.length, viewer: info.viewer, code: info.code, pname: info.pname,
+    pkey, date: info.date, trusted: info.trusted, added: Date.now(), opened: Date.now() };
+  await putFile(rec).catch(() => {});
+  persist();
+  show(rec);
+}
+function show(f, piece) {
+  // misma página que en el PC y en Chrome: la app solo agrega window.HILAM_APP (y LF_APP para Láminas), que habilitan la
+  // cámara y la revisión en terreno. Un .html que no es de la suite se abre aislado (sandbox, sin el origen de la app).
+  const app = `{version:${JSON.stringify(APP_VERSION)},platform:"pwa"}`;
+  const flag = `<script>window.HILAM_APP=${app};window.LF_APP=window.HILAM_APP;<\/script>`;
+  const html = f.trusted === false ? f.html : (/<head[^>]*>/i.test(f.html) ? f.html.replace(/<head[^>]*>/i, (h) => h + flag) : flag + f.html);
+  if (blobUrl) URL.revokeObjectURL(blobUrl);
+  blobUrl = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+  // un marco nuevo cada vez: cambiar la dirección de un marco existente agrega pasos a la historia, y el «atrás» de
+  // Android vaciaba el marco (pantalla en blanco) en vez de cerrar el visor
+  const old = $("#frame"); if (old) old.remove();
+  const fr = document.createElement("iframe");
+  fr.id = "frame"; fr.title = "Visor HILAM"; fr.allow = "camera; fullscreen; web-share; clipboard-write"; fr.allowFullscreen = true;
+  if (f.trusted === false) fr.setAttribute("sandbox", "allow-scripts allow-popups allow-modals allow-downloads allow-forms");
+  fr.src = blobUrl + (piece ? "#" + encodeURIComponent(piece) : "");
+  $("#viewer").appendChild(fr);
+  $("#viewer").hidden = false;
+  document.title = f.name;
+  if (!history.state || !history.state.viewer) history.pushState({ viewer: true, project: f.pkey }, "", location.pathname + "#visor");
+}
+async function openFile(file) { receive(file.name, await file.text()); }
 function closeViewer() {
-  $("#viewer").hidden = true; $("#back").hidden = true; $("#frame").src = "about:blank";
+  $("#viewer").hidden = true; const fr = $("#frame"); if (fr) fr.remove();
   if (blobUrl) { URL.revokeObjectURL(blobUrl); blobUrl = null; }
   document.title = "Visor HILAM";
-  renderRecent();
 }
-// el visor avisa cuando abre o cierra la cámara: el botón ← no debe tapar sus controles
-window.addEventListener("message", (e) => {
-  if (e.source !== $("#frame").contentWindow || !e.data || typeof e.data.lfCamera !== "boolean") return;
-  $("#back").hidden = e.data.lfCamera || $("#viewer").hidden;
+// «atrás» de Android: cierra la cámara (si el visor la tiene abierta), luego el visor y luego el proyecto
+window.addEventListener("popstate", (e) => {
+  if (!$("#viewer").hidden) { closeViewer(); }
+  const st = e.state || {};
+  if (st.project) renderProject(st.project); else showHome();
 });
-// atrás de Android (gesto o botón) cierra el visor y vuelve a la lista (la cámara, si está abierta, se cierra antes)
-window.addEventListener("popstate", () => { if (!$("#viewer").hidden) closeViewer(); });
-$("#back").addEventListener("click", () => { if (history.state && history.state.viewer) history.back(); else closeViewer(); });
 
 $("#openBtn").addEventListener("click", () => $("#pick").click());
 $("#pick").addEventListener("change", (e) => { const f = e.target.files[0]; if (f) openFile(f); e.target.value = ""; });
 
-async function renderRecent() {
-  const all = await listRecent().catch(() => []);
-  $("#recent").innerHTML = all.length ? all.map((r) =>
-    `<div class="rec" data-id="${esc(r.id)}"><b>${esc(r.name)}</b><small>${esc(r.info || "")}${r.info ? " · " : ""}${new Date(r.opened).toLocaleDateString("es-CL")} · ${Math.round(r.size / 1024)} KB</small>` +
-    `<button class="del" data-del="${esc(r.id)}" aria-label="Quitar">✕</button></div>`).join("") : `<p class="empty">Todavía no has abierto ningún visor.</p>`;
-}
-$("#recent").addEventListener("click", async (e) => {
-  const del = e.target.closest("[data-del]");
-  if (del) { await tx("files", "readwrite", (s) => s.delete(del.dataset.del)); renderRecent(); return; }
-  const row = e.target.closest("[data-id]"); if (!row) return;
-  const rec = await tx("files", "readonly", (s) => s.get(row.dataset.id));
-  if (rec) { rec.opened = Date.now(); await saveRecent(rec); openText(rec.name, rec.html, false); }
-});
-
-// ---- archivo recibido: «Compartir» (lo guarda el service worker) o «Abrir con» (File Handling / launchQueue)
+// ---- archivo recibido: «Compartir» (lo guarda el service worker) o «Abrir con» (launchQueue)
 async function takeInbox() {
   const items = (await tx("inbox", "readonly", (s) => s.getAll()).catch(() => [])) || [];
   if (!items.length) return false;
   await tx("inbox", "readwrite", (s) => s.clear());
   const last = items.sort((a, b) => b.at - a.at)[0];
   if (last.error) { showError(last.error); return true; }
-  await openText(last.name, last.html);
+  await receive(last.name, last.html);
   return true;
 }
 if ("launchQueue" in window) {
@@ -171,12 +335,21 @@ if ("launchQueue" in window) {
 // ---- inicio
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 (async () => {
-  if (location.hash === "#visor") history.replaceState(null, "", location.pathname);
-  await renderRecent();
-  const shared = new URLSearchParams(location.search).has("share");
-  if (shared) history.replaceState(null, "", location.pathname);
+  if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+  if (new URLSearchParams(location.search).has("share")) history.replaceState(null, "", location.pathname);
+  await migrate();
+  showHome();
   await takeInbox();
 })();
+// visores guardados por la versión anterior (sin proyecto ni tipo): se reconocen de nuevo
+async function migrate() {
+  for (const f of await allFiles()) {
+    if (f.pkey) continue;
+    const info = recognize(f.name, f.html) || { viewer: "otro", code: "", pname: "", date: "", trusted: false };
+    Object.assign(f, { viewer: info.viewer, code: info.code, pname: info.pname, date: info.date, trusted: info.trusted, pkey: projectKey(info), added: f.opened || Date.now() });
+    await delFile(f.id); f.id = f.pkey + "|" + f.name; await putFile(f);
+  }
+}
 </script>
 </body>
 </html>

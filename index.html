@@ -59,6 +59,7 @@
     <li><b>Compartir:</b> desde WhatsApp, Teams, correo o Archivos, toca el archivo del visor (<code>.html</code>, p. ej. <code>…_LF_NN.html</code> de Láminas) → Compartir → <b>Visor HILAM</b>.</li>
     <li><b>Abrir visor:</b> el botón de arriba busca el archivo en el teléfono.</li>
     <li>El archivo queda en este teléfono (Recientes). No se sube a ningún servidor.</li>
+    <li><b>Calzar con QR:</b> imprime el <a href="marcador.html" target="_blank">marcador QR</a> (desde el PC, al 100 %) y pégalo en una esquina de la pieza.</li>
     <li>Abre cualquier visor HILAM. Los que usan la cámara (p. ej. Láminas: <b>◉ Cámara</b>) la tienen activa dentro de esta app.</li>
   </ul>
   <p class="ver" id="ver"></p>
@@ -67,7 +68,7 @@
 <button id="back" hidden aria-label="Volver a la lista">←</button>
 <script>
 "use strict";
-const APP_VERSION = "1.0.1";
+const APP_VERSION = "1.1.0";
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 $("#ver").textContent = "Versión " + APP_VERSION;

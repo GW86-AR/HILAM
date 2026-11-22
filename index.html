@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FB6E00">
+<title>Visor HILAM</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+  :root { --ink:#17212b; --muted:#6b7682; --line:rgba(16,24,40,.12); --line2:rgba(16,24,40,.22); --accent:#FB6E00; --bg:#eef0f3; --panel:#fff;
+    --sans: Inter, "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; --mono: "IBM Plex Mono", Consolas, monospace; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font: 14px/1.45 var(--sans); }
+  body { -webkit-tap-highlight-color: transparent; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  .top { height: 56px; display: flex; align-items: center; gap: 12px; padding: 0 16px; padding-top: env(safe-area-inset-top);
+    background: var(--panel); border-bottom: 1px solid var(--line); }
+  .mark { width: 28px; height: 28px; background: var(--accent); flex: none; position: relative; }
+  .mark::after { content: ""; position: absolute; left: 8px; top: 4px; width: 12px; height: 20px; background: #fff;
+    clip-path: polygon(0 0, 66% 0, 100% 30%, 100% 100%, 0 100%); }
+  .top b { font-size: 16px; }
+  .top small { display: block; color: var(--muted); font-size: 12px; }
+  .btn { border: 1px solid var(--line2); background: var(--panel); padding: 9px 14px; border-radius: 8px; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  #home { max-width: 640px; margin: 0 auto; padding: 18px 16px 40px; }
+  .open { display: flex; width: 100%; justify-content: center; gap: 8px; padding: 16px; font-size: 16px; margin: 4px 0 18px; }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 22px 0 8px; }
+  .rec { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: center; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; cursor: pointer; }
+  .rec b { font: 600 14px var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rec small { color: var(--muted); grid-column: 1; }
+  .rec .del { grid-row: 1 / 3; grid-column: 2; border: 0; background: none; color: var(--muted); font-size: 18px; padding: 6px 8px; }
+  .empty { color: var(--muted); font-style: italic; }
+  .help { color: var(--muted); font-size: 13px; }
+  .help li { margin: 4px 0; }
+  .err { background: #ffe8e8; color: #9b1c1c; border-radius: 8px; padding: 10px 12px; margin: 8px 0; }
+  .err[hidden] { display: none; }
+  #viewer { position: fixed; inset: 0; background: #fff; z-index: 5; }
+  #viewer[hidden] { display: none; }
+  #frame { border: 0; width: 100%; height: 100%; display: block; }
+  #back { position: fixed; left: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 6; width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid var(--line2); background: rgba(255,255,255,.88); box-shadow: 0 2px 8px rgba(0,0,0,.18); font-size: 18px; line-height: 1; }
+  #back[hidden] { display: none; }
+  .ver { color: var(--muted); font-size: 11px; text-align: center; margin-top: 30px; }
+</style>
+</head>
+<body>
+<header class="top"><div class="mark" aria-hidden="true"></div><div><b>Visor HILAM</b><small>Visores de la suite HILAM</small></div></header>
+<main id="home">
+  <input id="pick" type="file" accept=".html,.htm,text/html" hidden>
+  <button class="btn primary open" id="openBtn">Abrir visor (.html)</button>
+  <div class="err" id="err" hidden></div>
+  <h2>Recientes</h2>
+  <div id="recent"></div>
+  <h2>Cómo abrir un visor</h2>
+  <ul class="help">
+    <li><b>Compartir:</b> desde WhatsApp, Teams, correo o Archivos, toca el archivo del visor (<code>.html</code>, p. ej. <code>…_LF_NN.html</code> de Láminas) → Compartir → <b>Visor HILAM</b>.</li>
+    <li><b>Abrir visor:</b> el botón de arriba busca el archivo en el teléfono.</li>
+    <li>El archivo queda en este teléfono (Recientes). No se sube a ningún servidor.</li>
+    <li>Abre cualquier visor HILAM. Los que usan la cámara (p. ej. Láminas: <b>◉ Cámara</b>) la tienen activa dentro de esta app.</li>
+  </ul>
+  <p class="ver" id="ver"></p>
+</main>
+<div id="viewer" hidden><iframe id="frame" title="Visor HILAM" allow="camera; fullscreen; web-share; clipboard-write" allowfullscreen></iframe></div>
+<button id="back" hidden aria-label="Volver a la lista">←</button>
+<script>
+"use strict";
+const APP_VERSION = "1.0.0";
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+$("#ver").textContent = "Versión " + APP_VERSION;
+
+// ---- almacenamiento local (IndexedDB): visores recientes y el archivo recibido por «Compartir»
+function db() {
+  return new Promise((ok, ko) => {
+    const r = indexedDB.open("hilam", 1);
+    r.onupgradeneeded = () => { r.result.createObjectStore("files", { keyPath: "id" }); r.result.createObjectStore("inbox", { keyPath: "id" }); };
+    r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error);
+  });
+}
+async function tx(store, mode, fn) {
+  const d = await db();
+  return new Promise((ok, ko) => { const t = d.transaction(store, mode), s = t.objectStore(store), res = fn(s); t.oncomplete = () => ok(res && res.result); t.onerror = () => ko(t.error); });
+}
+const MAX_RECENT = 8;
+async function listRecent() { const all = (await tx("files", "readonly", (s) => s.getAll())) || []; return all.sort((a, b) => b.opened - a.opened); }
+async function saveRecent(rec) {
+  await tx("files", "readwrite", (s) => s.put(rec));
+  const all = await listRecent();
+  for (const old of all.slice(MAX_RECENT)) await tx("files", "readwrite", (s) => s.delete(old.id));
+}
+
+// ---- abrir un visor
+// un visor HILAM se reconoce por <meta name="hilam-visor" content="nombre">; los visores de Láminas anteriores a esa marca
+// se reconocen por su texto. Cualquier otro .html se rechaza: la app le daría acceso a sus archivos guardados.
+function isViewer(html) { return /<meta[^>]+name=["']hilam-visor["']/i.test(html) || (/Láminas de fabricación/.test(html) && /const DATA = /.test(html)); }
+function viewerName(html) { const m = html.match(/<meta[^>]+name=["']hilam-visor["'][^>]*content=["']([^"']*)["']/i); return m ? m[1] : "laminas"; }
+function describe(html) {                                  // código, modelo y fecha del visor, para la lista
+  const m = html.match(/"project"\s*:\s*\{[^}]*\}/);
+  try { const p = JSON.parse("{" + m[0] + "}").project; return [p.code, p.model, (p.created || "").slice(0, 10)].filter(Boolean).join(" · "); } catch (e) { return ""; }
+}
+let blobUrl = null;
+function showError(t) { const e = $("#err"); e.textContent = t; e.hidden = !t; }
+async function openText(name, html, keep) {
+  if (!isViewer(html)) { showError(`«${name}» no es un visor de la suite HILAM (los visores exportados llevan la marca hilam-visor).`); return; }
+  showError("");
+  // misma página que en el PC y en Chrome: la app solo agrega window.HILAM_APP (y LF_APP para Láminas), que habilitan la cámara
+  const app = `{version:${JSON.stringify(APP_VERSION)},platform:"pwa"}`, flag = `<script>window.HILAM_APP=${app};window.LF_APP=window.HILAM_APP;<\/script>`;
+  const page = /<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, (h) => h + flag) : flag + html;
+  if (blobUrl) URL.revokeObjectURL(blobUrl);
+  blobUrl = URL.createObjectURL(new Blob([page], { type: "text/html" }));
+  $("#frame").src = blobUrl;
+  $("#viewer").hidden = false; $("#back").hidden = false;
+  document.title = name;
+  if (!history.state || !history.state.viewer) history.pushState({ viewer: true }, "", location.pathname + "#visor");
+  if (keep !== false) {
+    const id = name + "|" + html.length;
+    await saveRecent({ id, name, info: describe(html), size: html.length, opened: Date.now(), html }).catch(() => {});
+  }
+}
+async function openFile(file) { openText(file.name, await file.text()); }
+function closeViewer() {
+  $("#viewer").hidden = true; $("#back").hidden = true; $("#frame").src = "about:blank";
+  if (blobUrl) { URL.revokeObjectURL(blobUrl); blobUrl = null; }
+  document.title = "Visor HILAM";
+  renderRecent();
+}
+// el visor avisa cuando abre o cierra la cámara: el botón ← no debe tapar sus controles
+window.addEventListener("message", (e) => {
+  if (e.source !== $("#frame").contentWindow || !e.data || typeof e.data.lfCamera !== "boolean") return;
+  $("#back").hidden = e.data.lfCamera || $("#viewer").hidden;
+});
+// atrás de Android (gesto o botón) cierra el visor y vuelve a la lista (la cámara, si está abierta, se cierra antes)
+window.addEventListener("popstate", () => { if (!$("#viewer").hidden) closeViewer(); });
+$("#back").addEventListener("click", () => { if (history.state && history.state.viewer) history.back(); else closeViewer(); });
+
+$("#openBtn").addEventListener("click", () => $("#pick").click());
+$("#pick").addEventListener("change", (e) => { const f = e.target.files[0]; if (f) openFile(f); e.target.value = ""; });
+
+async function renderRecent() {
+  const all = await listRecent().catch(() => []);
+  $("#recent").innerHTML = all.length ? all.map((r) =>
+    `<div class="rec" data-id="${esc(r.id)}"><b>${esc(r.name)}</b><small>${esc(r.info || "")}${r.info ? " · " : ""}${new Date(r.opened).toLocaleDateString("es-CL")} · ${Math.round(r.size / 1024)} KB</small>` +
+    `<button class="del" data-del="${esc(r.id)}" aria-label="Quitar">✕</button></div>`).join("") : `<p class="empty">Todavía no has abierto ningún visor.</p>`;
+}
+$("#recent").addEventListener("click", async (e) => {
+  const del = e.target.closest("[data-del]");
+  if (del) { await tx("files", "readwrite", (s) => s.delete(del.dataset.del)); renderRecent(); return; }
+  const row = e.target.closest("[data-id]"); if (!row) return;
+  const rec = await tx("files", "readonly", (s) => s.get(row.dataset.id));
+  if (rec) { rec.opened = Date.now(); await saveRecent(rec); openText(rec.name, rec.html, false); }
+});
+
+// ---- archivo recibido: «Compartir» (lo guarda el service worker) o «Abrir con» (File Handling / launchQueue)
+async function takeInbox() {
+  const items = (await tx("inbox", "readonly", (s) => s.getAll()).catch(() => [])) || [];
+  if (!items.length) return false;
+  await tx("inbox", "readwrite", (s) => s.clear());
+  const last = items.sort((a, b) => b.at - a.at)[0];
+  if (last.error) { showError(last.error); return true; }
+  await openText(last.name, last.html);
+  return true;
+}
+if ("launchQueue" in window) {
+  window.launchQueue.setConsumer(async (params) => { for (const h of params.files || []) { const f = await h.getFile(); await openFile(f); break; } });
+}
+
+// ---- inicio
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+(async () => {
+  if (location.hash === "#visor") history.replaceState(null, "", location.pathname);
+  await renderRecent();
+  const shared = new URLSearchParams(location.search).has("share");
+  if (shared) history.replaceState(null, "", location.pathname);
+  await takeInbox();
+})();
+</script>
+</body>
+</html>

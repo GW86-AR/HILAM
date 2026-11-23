@@ -41,7 +41,10 @@
   .card .del { border: 0; background: none; color: var(--muted); font-size: 18px; padding: 6px 8px; }
   .tag { display: inline-block; font: 600 11px var(--sans); padding: 1px 7px; border-radius: 999px; margin-right: 6px; vertical-align: 1px; color: #fff; background: #6b7682; }
   .tag.laminas { background: #f26a1b; } .tag.control { background: #1971c2; } .tag.comentarios { background: #7048e8; }
-  .tag.montaje { background: #2f9e44; } .tag.carga { background: #0c8599; } .tag.otro { background: #868e96; }
+  .tag.montaje { background: #2f9e44; } .tag.carga { background: #0c8599; } .tag.avance { background: #e8590c; } .tag.otro { background: #868e96; }
+  .vtag { display: inline-block; font: 700 11px var(--mono); padding: 1px 6px; border-radius: 6px; margin-right: 6px; background: var(--ink); color: #fff; vertical-align: 1px; }
+  .prev { display: inline-block; font: 600 11px var(--sans); padding: 1px 7px; border-radius: 999px; margin-right: 6px; background: #fff3bf; color: #8a6100; vertical-align: 1px; }
+  .card.old b { color: var(--muted); }
   .ok { color: #2b8a3e; font-weight: 600; } .no { color: #c92a2a; font-weight: 600; }
   .phead { display: flex; align-items: center; gap: 8px; margin: 2px 0 4px; }
   .phead .link { border: 0; background: none; color: var(--accent); font-weight: 600; padding: 4px 0; }
@@ -81,7 +84,7 @@
 <div id="viewer" hidden></div>
 <script>
 "use strict";
-const APP_VERSION = "1.2.1";
+const APP_VERSION = "1.3.0";
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const fmtDate = (t) => t ? new Date(t).toLocaleDateString("es-CL") : "";
@@ -119,8 +122,9 @@ async function persist() {
 }
 
 // ---- qué visor es y de qué proyecto
-const VIEWERS = { laminas: "Láminas", control: "Reporte de Control", comentarios: "Control de comentarios", montaje: "Estudio de montaje", carga: "Truck Optimizer", otro: "Visor HILAM" };
-const CODES = { LF: "laminas", RC: "control", CC: "comentarios", OF: "control", EM: "montaje", TO: "carga" };
+const VIEWERS = { laminas: "Láminas", control: "Reporte de Control", comentarios: "Control de comentarios", montaje: "Estudio de montaje",
+  carga: "Carga 3D", avance: "Avance de obra", otro: "Visor HILAM" };
+const CODES = { LF: "laminas", RC: "control", CC: "comentarios", OF: "control", EM: "montaje", VC: "carga" };
 function meta(html, name) {
   const m = html.match(new RegExp(`<meta[^>]+name=["']${name}["'][^>]*>`, "i"));
   const c = m && m[0].match(/content=["']([^"']*)["']/i);
@@ -129,18 +133,22 @@ function meta(html, name) {
 function recognize(name, html) {
   const head = html.slice(0, 200000), title = ((head.match(/<title>([\s\S]*?)<\/title>/i) || [])[1] || "").trim();
   let viewer = meta(head, "hilam-visor");
-  const fileCode = (name.match(/_([A-Z]{2})_\d+\.html?$/i) || [])[1];
+  const fileCode = (name.match(/(?:^|_)([A-Z]{2})_(?:\d+|E[\w+-]+_v\d+)\.html?$/i) || [])[1];     // 2645_LF_05 · 2645_VC_E1-5_v02
   if (!viewer && fileCode && CODES[fileCode.toUpperCase()]) viewer = CODES[fileCode.toUpperCase()];
   if (!viewer) {
     if (/Láminas de fabricación/.test(title) || (/Láminas de fabricación/.test(head) && /const DATA = /.test(html))) viewer = "laminas";
     else if (/Reporte de Control/i.test(title)) viewer = "control";
     else if (/comentarios/i.test(title)) viewer = "comentarios";
     else if (/montaje|armado/i.test(title)) viewer = "montaje";
-    else if (/Truck Optimizer|Avance de obra|carga/i.test(title)) viewer = "carga";
+    else if (/Avance de obra/i.test(title)) viewer = "avance";                    // antes de «carga»: su título no dice «carga»
+    else if (/carga en 3D|Truck Optimizer|Patio y bah/i.test(title)) viewer = "carga";
     else if (/HILAM/.test(html)) viewer = "otro";
   }
   if (!viewer) return null;
   if (!VIEWERS[viewer]) viewer = "otro";
+  // versión y clave (qué lo hace «el mismo visor» entre versiones): las marcas; si no, la versión del nombre del archivo
+  const clave = meta(head, "hilam-clave") || "";
+  const version = meta(head, "hilam-version") || ((name.match(/_(v\d+)\.html?$/i) || [])[1] || "").toLowerCase();
   // proyecto: la marca hilam-proyecto («2645 · nombre»); si no, los datos de Láminas, el código del nombre del archivo o el título
   let code = "", pname = "";
   const pm = meta(head, "hilam-proyecto");
@@ -150,11 +158,19 @@ function recognize(name, html) {
     if (m) { try { const p = JSON.parse("{" + m[0] + "}").project; code = String(p.code || ""); pname = p.model || ""; } catch (e) { /* sin datos */ } }
   }
   if (!code) code = (name.match(/^(\d{3,5})[_ -]/) || [])[1] || "";
-  if (!pname) { const t = title.split(/\s[·–—-]\s/); pname = t.length > 1 ? t.slice(1).join(" · ") : ""; }
+  if (!pname) {                                         // archivos sin marca: lo que queda del título sin las palabras del tipo de visor
+    const TYPE = /^(?:Avance de obra|Envíos?\b.*|.*carga en 3D|Láminas de fabricación|Reporte de Control.*|Visor de montaje|Truck Optimizer.*|\(PC\)|v\d+)$/i;
+    const rest = title.replace(/^[\s·–—-]+/, "").split(/\s[·–—-]\s/).map((x) => x.trim().replace(/\s*\(PC\)$/, "")).filter((x) => x && !TYPE.test(x));
+    const num = rest.find((x) => /^\d{3,5}$/.test(x));
+    if (num && !code) code = num;
+    pname = rest.filter((x) => x !== num).join(" · ");
+    if (viewer === "avance" && !pm) pname = "";           // su título lleva el nombre corto del visor («TW»), no el del proyecto
+  }
   const date = meta(head, "hilam-fecha") || ((html.match(/"created"\s*:\s*"([^"]{10})/) || [])[1]) || "";
-  return { viewer, code, pname, date, title, trusted: true };
+  return { viewer, code, pname, date, title, version, clave, trusted: true };
 }
 const projectKey = (r) => r.code || r.pname || "sin-proyecto";
+const verNum = (v) => parseInt(String(v || "").replace(/\D/g, ""), 10) || 0;
 
 // ---- revisiones en terreno (las guardan los visores en el almacenamiento de la app: "lf_ar:<proyecto>:<pieza>")
 function allReviews() {
@@ -209,9 +225,14 @@ async function renderProject(key) {
   curProject = key;
   let h = `<div class="phead"><button class="link" data-act="home">‹ Proyectos</button></div>` +
     `<div class="ptitle">${esc(ptitle(p))}</div><p class="psub">${p.files.length} ${p.files.length === 1 ? "visor" : "visores"} · ${p.revs.length} ${p.revs.length === 1 ? "revisión" : "revisiones"}</p>`;
+  // dentro de un proyecto, de cada visor con clave (p. ej. los envíos 1-5 de carga) la versión más alta es la vigente
+  const newest = {};
+  for (const f of p.files) if (f.clave) { const n = verNum(f.version); if (!(f.clave in newest) || n > newest[f.clave].n) newest[f.clave] = { n, v: f.version }; }
+  const old = (f) => !!f.clave && verNum(f.version) < newest[f.clave].n;
   h += `<h2>Visores</h2>` + (p.files.length ? p.files.map((f) =>
-    `<div class="card" data-file="${esc(f.id)}"><b class="mono">${esc(f.name)}</b>` +
-    `<small><span class="tag ${f.viewer}">${esc(VIEWERS[f.viewer])}</span>${f.date ? "exportado " + esc(f.date) + " · " : ""}abierto ${fmtDate(f.opened)} · ${kb(f.size)}</small>` +
+    `<div class="card${old(f) ? " old" : ""}" data-file="${esc(f.id)}"${old(f) ? ` data-newest="${esc(newest[f.clave].v)}"` : ""}><b class="mono">${esc(f.name)}</b>` +
+    `<small><span class="tag ${f.viewer}">${esc(VIEWERS[f.viewer])}</span>${f.version ? `<span class="vtag">${esc(f.version)}</span>` : ""}` +
+    `${old(f) ? `<span class="prev">anterior</span>` : ""}${f.date ? "exportado " + esc(f.date) + " · " : ""}abierto ${fmtDate(f.opened)} · ${kb(f.size)}</small>` +
     `<span class="side"><button class="del" data-move="${esc(f.id)}" aria-label="Mover a otro proyecto" title="Mover a otro proyecto">⇄</button>` +
     `<button class="del" data-delfile="${esc(f.id)}" aria-label="Eliminar">✕</button></span></div>`).join("")
     : `<p class="empty">Sin visores guardados.</p>`);
@@ -249,13 +270,14 @@ Proyectos: ${ps.join(" | ")}` : ""), f.code ? `${f.code} · ${f.pname}` : "");
     const m = ans.trim().match(/^(\d{3,5})\s*(?:·|-|\s)\s*(.*)$/), code = m ? m[1] : (/^\d{3,5}$/.test(ans.trim()) ? ans.trim() : ""), pname = m ? m[2] : (code ? "" : ans.trim());
     const known = (await projects()).find((x) => x.code && x.code === code);
     await delFile(f.id);
-    Object.assign(f, { code, pname: pname || (known ? known.name : ""), pkey: code || pname });
+    Object.assign(f, { code, pname: pname || (known ? known.name : ""), pkey: code || pname, manual: true });
     f.id = f.pkey + "|" + f.name; await putFile(f);
     renderProject(curProject); return;
   }
   if (df) { e.stopPropagation(); const f = await getFile(df.dataset.delfile); if (f && confirm(`¿Eliminar «${f.name}» de este teléfono?`)) { await delFile(f.id); renderProject(curProject); } return; }
   if (dr) { e.stopPropagation(); if (confirm("¿Eliminar esta revisión?")) { try { localStorage.removeItem(dr.dataset.delrev); } catch (er) { /* */ } renderProject(curProject); } return; }
   const fc = e.target.closest("[data-file]");
+  if (fc && fc.dataset.newest && !confirm(`Hay una versión más nueva de este visor (${fc.dataset.newest}). ¿Abrir esta de todos modos?`)) return;
   if (fc) { const f = await getFile(fc.dataset.file); if (f) { f.opened = Date.now(); await putFile(f); show(f); } return; }
   const rc = e.target.closest("[data-rev]");
   if (rc) {                                             // abrir la revisión: el visor más reciente del proyecto, en esa pieza
@@ -277,7 +299,7 @@ async function receive(name, html) {
   }
   showError("");
   const pkey = projectKey(info), rec = { id: pkey + "|" + name, name, html, size: html.length, viewer: info.viewer, code: info.code, pname: info.pname,
-    pkey, date: info.date, trusted: info.trusted, added: Date.now(), opened: Date.now() };
+    pkey, date: info.date, version: info.version || "", clave: info.clave || "", rv: RV, trusted: info.trusted, added: Date.now(), opened: Date.now() };
   await putFile(rec).catch(() => {});
   persist();
   show(rec);
@@ -342,11 +364,16 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
   await takeInbox();
 })();
 // visores guardados por la versión anterior (sin proyecto ni tipo): se reconocen de nuevo
+// RV = versión de las reglas de reconocimiento: al subirla, lo guardado se reconoce de nuevo (tipo, proyecto, versión),
+// salvo lo que el usuario movió a mano (⇄), que nunca se toca.
+const RV = 3;
 async function migrate() {
   for (const f of await allFiles()) {
-    if (f.pkey) continue;
+    if (f.pkey && (f.rv || 1) >= RV) continue;
+    if (f.manual) { f.rv = RV; await putFile(f); continue; }
     const info = recognize(f.name, f.html) || { viewer: "otro", code: "", pname: "", date: "", trusted: false };
-    Object.assign(f, { viewer: info.viewer, code: info.code, pname: info.pname, date: info.date, trusted: info.trusted, pkey: projectKey(info), added: f.opened || Date.now() });
+    Object.assign(f, { viewer: info.viewer, code: info.code, pname: info.pname, date: info.date, version: info.version || "", clave: info.clave || "",
+      trusted: info.trusted, pkey: projectKey(info), rv: RV, added: f.added || f.opened || Date.now() });
     await delFile(f.id); f.id = f.pkey + "|" + f.name; await putFile(f);
   }
 }
